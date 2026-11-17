@@ -732,8 +732,51 @@ See the [examples README](examples/README.md) for setup instructions.
 These checks validate conformance with the [Agent Skills specification](https://agentskills.io/specification) and perform additional checks:
 
 - **Structure**: `SKILL.md` exists; only recognized directories (`scripts/`, `references/`, `assets/`); no deep nesting; no orphan files
-- **Frontmatter**: required fields (`name`, `description`) are present and valid; `name` is lowercase alphanumeric with hyphens (1-64 chars) and matches the directory name; optional fields (`license`, `compatibility`, `metadata`, `allowed-tools`) conform to expected types and lengths; unrecognized fields are flagged
 - **Read limit**: no single file is read past 8 MiB, so a pathological file cannot exhaust memory. A larger file's token count covers only its first 8 MiB and is flagged as such; the unclosed-fence and orphan checks skip it with a warning, since they need the whole file to be right
+
+- **Frontmatter fields**: See table below for validation requirements.
+
+| Field | Requirement |
+| --- | --- |
+| `name` | Required; 1-64 lowercase letters, numbers, and hyphens; must match the directory name |
+| `description` | Required; must conform to the expected type and length |
+| `metadata.labelText` | Required; must be a non-blank string |
+| `license` | Optional; must conform to the expected type and length |
+| `compatibility` | Optional; must conform to the expected type and length |
+| Other `metadata` entries | Optional; must conform to the expected types and lengths |
+| `allowed-tools` | Optional; must conform to the expected type and length |
+
+Unrecognized fields are flagged.
+
+**Display label (`metadata.labelText`)**
+
+The display label is a short, human-readable name for the skill. Set it in the
+`metadata` section of the skill's `SKILL.md` frontmatter:
+
+```yaml
+metadata:
+  labelText: "Build and optimize search indexes."
+```
+
+This validator requires `metadata.labelText` in every skill. The field is not
+part of the [Agent Skills specification](https://agentskills.io/specification).
+
+The value must be a string that contains at least one non-whitespace character.
+Validation fails with an error if the field is:
+
+- missing or `null`
+- empty or whitespace-only
+- not a string, such as a number or boolean
+
+The check runs in `validate structure`, and in `check` when the structure group
+is enabled. `--allow-extra-frontmatter` does not turn it off.
+
+If the label is missing, `null`, or blank, the error message suggests a value:
+the first sentence of the skill's description. If the description has no usable
+sentence, the message asks you to write a short summary instead. The validator
+never edits the skill file, so you add the label yourself. With
+`--emit-annotations`, the error and its suggestion also appear as GitHub Actions
+annotations.
 
 **Extraneous file detection**
 - Files like `README.md`, `CHANGELOG.md`, and `LICENSE` are flagged at the skill root -- these are for human readers, not agents, and may be loaded into the context window unnecessarily

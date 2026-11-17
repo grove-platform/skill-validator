@@ -2,6 +2,8 @@
 name: flat-skill
 description: A skill using a flat layout with all files at the root level.
 license: MIT
+metadata:
+  labelText: "Work with a flat skill layout."
 ---
 # Flat Skill
 

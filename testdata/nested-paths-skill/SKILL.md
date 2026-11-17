@@ -1,6 +1,8 @@
 ---
 name: nested-paths-skill
 description: A fixture with two intentionally nested asset bundles.
+metadata:
+  labelText: "Use nested asset bundles."
 ---
 
 # Nested Paths Skill

@@ -440,6 +440,42 @@ func TestCheckFrontmatter_Metadata(t *testing.T) {
 	})
 }
 
+func TestCheckFrontmatter_LabelText(t *testing.T) {
+	tests := []struct {
+		name        string
+		metadata    any
+		description string
+		level       types.Level
+		message     string
+	}{
+		{"missing metadata", nil, "Build search indexes. Use for search.", types.Error, `suggested labelText: "Build search indexes."`},
+		{"missing field", map[string]any{"version": "1.0"}, "Build search indexes.", types.Error, `suggested labelText: "Build search indexes."`},
+		{"empty field", map[string]any{"labelText": ""}, "Build search indexes.", types.Error, "metadata.labelText is required"},
+		{"whitespace field", map[string]any{"labelText": " \t\n"}, "Build search indexes.", types.Error, "metadata.labelText is required"},
+		{"null field", map[string]any{"labelText": nil}, "Build search indexes.", types.Error, "metadata.labelText is required"},
+		{"non-string field", map[string]any{"labelText": 42}, "Build search indexes.", types.Error, "metadata.labelText must be a string"},
+		{"valid field", map[string]any{"labelText": "Build search indexes"}, "Different description.", types.Pass, `metadata.labelText: "Build search indexes"`},
+		{"multiline description", nil, "  Build\nsearch indexes.  Use for search.\n", types.Error, `suggested labelText: "Build search indexes."`},
+		{"no usable description", nil, " \t\n", types.Error, "add a short summary of what the skill does"},
+		{"abbreviation in description", nil, "Use e.g. vector search. Next sentence.", types.Error, `suggested labelText: "Use e.g. vector search."`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := makeSkill("/tmp/my-skill", "my-skill", tt.description)
+			s.RawFrontmatter["metadata"] = tt.metadata
+			for _, opts := range []Options{{}, {AllowExtraFrontmatter: true}} {
+				results := CheckFrontmatter(s, opts)
+				requireResultContaining(t, results, tt.level, tt.message)
+				if tt.level == types.Pass {
+					requireNoResultContaining(t, results, types.Error, "labelText")
+				} else {
+					requireNoResultContaining(t, results, types.Pass, "metadata.labelText")
+				}
+			}
+		})
+	}
+}
+
 func TestCheckFrontmatter_OptionalFields(t *testing.T) {
 	t.Run("license present", func(t *testing.T) {
 		s := makeSkill("/tmp/my-skill", "my-skill", "desc")

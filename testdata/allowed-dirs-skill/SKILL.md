@@ -4,6 +4,7 @@ description: A skill with development directories that require --allow-dirs.
 license: MIT
 compatibility: Works with all major LLM providers.
 metadata:
+  labelText: "Validate skills with development directories."
   author: test
   version: "1.0"
 allowed-tools: Bash, Read, Write

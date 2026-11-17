@@ -11,7 +11,7 @@ import (
 func TestValidate(t *testing.T) {
 	t.Run("valid skill", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\n---\n# Body\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\nmetadata:\n  labelText: A valid skill\n---\n# Body\n")
 		report := Validate(dir, Options{})
 		if report.Errors != 0 {
 			t.Errorf("expected 0 errors, got %d", report.Errors)
@@ -158,7 +158,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("flat layout no warnings for root files", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A flat skill\n---\n# Body\nSee guide.md for details.\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A flat skill\nmetadata:\n  labelText: A flat skill\n---\n# Body\nSee guide.md for details.\n")
 		writeFile(t, dir, "guide.md", "Guide content.")
 		report := Validate(dir, Options{AllowFlatLayouts: true})
 		if report.Errors != 0 {
@@ -234,7 +234,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("allow-dirs suppresses unknown dir warning in full validation", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\n---\n# Body\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\nmetadata:\n  labelText: A valid skill\n---\n# Body\n")
 		writeFile(t, dir, "evals/evals.json", `{"tests": []}`)
 		report := Validate(dir, Options{AllowDirs: []string{"evals"}})
 		if report.Errors != 0 {
@@ -245,7 +245,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("allow-dirs with skip-orphans", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\n---\n# Body\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: A valid skill\nmetadata:\n  labelText: A valid skill\n---\n# Body\n")
 		writeFile(t, dir, "evals/evals.json", `{"tests": []}`)
 		writeFile(t, dir, "references/unused.md", "unused content")
 		report := Validate(dir, Options{AllowDirs: []string{"evals"}, SkipOrphans: true})
@@ -262,7 +262,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("allow-dirs with allow-extra-frontmatter", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\ncustom_field: value\n---\n# Body\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\nmetadata:\n  labelText: A valid skill\ncustom_field: value\n---\n# Body\n")
 		writeFile(t, dir, "evals/evals.json", `{"tests": []}`)
 		report := Validate(dir, Options{
 			AllowDirs:             []string{"evals"},
@@ -277,7 +277,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("allow-dirs with allow-flat-layouts full integration", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\n---\n# Body\nSee guide.md.\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\nmetadata:\n  labelText: A valid skill\n---\n# Body\nSee guide.md.\n")
 		writeFile(t, dir, "guide.md", "Guide content.")
 		writeFile(t, dir, "evals/evals.json", `{"tests": []}`)
 		report := Validate(dir, Options{
@@ -308,7 +308,7 @@ func TestValidate(t *testing.T) {
 
 	t.Run("allow-dirs with all flags combined", func(t *testing.T) {
 		dir := t.TempDir()
-		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\ncustom: val\n---\n# Body\nSee helper.md.\n")
+		writeSkill(t, dir, "---\nname: "+dirName(dir)+"\ndescription: desc\nmetadata:\n  labelText: A valid skill\ncustom: val\n---\n# Body\nSee helper.md.\n")
 		writeFile(t, dir, "helper.md", "Helper content.")
 		writeFile(t, dir, "evals/evals.json", `{"tests": []}`)
 		writeFile(t, dir, "testing/test1.md", "test content")
@@ -341,7 +341,7 @@ func TestValidateMulti(t *testing.T) {
 	dir := t.TempDir()
 	// Create two skills: one valid, one invalid
 	goodDir := filepath.Join(dir, "good")
-	writeSkill(t, goodDir, "---\nname: good\ndescription: A good skill\n---\n# Body\n")
+	writeSkill(t, goodDir, "---\nname: good\ndescription: A good skill\nmetadata:\n  labelText: A good skill\n---\n# Body\n")
 	badDir := filepath.Join(dir, "bad")
 	writeSkill(t, badDir, "---\nname: BAD\ndescription: \"\"\n---\n# Body\n")
 
