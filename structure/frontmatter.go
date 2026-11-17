@@ -23,7 +23,7 @@ const (
 )
 
 // CheckFrontmatter validates the YAML frontmatter of a parsed skill. It checks
-// required fields (name, description), enforces format and length constraints,
+// required fields (name, description, metadata.labelText), enforces format and length constraints,
 // validates optional fields, and warns about unrecognized or keyword-stuffed fields.
 func CheckFrontmatter(s *skill.Skill, opts Options) []types.Result {
 	ctx := types.ResultContext{Category: "Frontmatter", File: "SKILL.md"}
@@ -77,14 +77,19 @@ func CheckFrontmatter(s *skill.Skill, opts Options) []types.Result {
 		}
 	}
 
-	// Check optional metadata
+	// Check labelText exists in metadata and is valid.
+	results = append(results, checkLabelText(s, ctx))
+
+	// Check metadata value types.
 	if s.RawFrontmatter["metadata"] != nil {
 		// Verify it's a map[string]string
 		if m, ok := s.RawFrontmatter["metadata"].(map[string]any); ok {
 			allStrings := true
 			for k, v := range m {
 				if _, ok := v.(string); !ok {
-					results = append(results, ctx.Errorf("metadata[%q] value must be a string", k))
+					if k != "labelText" {
+						results = append(results, ctx.Errorf("metadata[%q] value must be a string", k))
+					}
 					allStrings = false
 				}
 			}
@@ -112,6 +117,27 @@ func CheckFrontmatter(s *skill.Skill, opts Options) []types.Result {
 	}
 
 	return results
+}
+
+func checkLabelText(s *skill.Skill, ctx types.ResultContext) types.Result {
+	metadata, _ := s.RawFrontmatter["metadata"].(map[string]any)
+	value, exists := metadata["labelText"]
+	if exists && value != nil {
+		label, ok := value.(string)
+		if !ok {
+			return ctx.Error("metadata.labelText must be a string")
+		}
+		if strings.TrimSpace(label) != "" {
+			return ctx.Passf("metadata.labelText: %q", label)
+		}
+	}
+
+	message := "metadata.labelText is required and must be a non-empty string"
+	description := strings.Join(strings.Fields(s.Frontmatter.Description), " ")
+	if sentences := splitSentences(description); len(sentences) > 0 {
+		return ctx.Errorf("%s; suggested labelText: %q", message, sentences[0])
+	}
+	return ctx.Error(message + "; add a short summary of what the skill does")
 }
 
 var quotedStringPattern = regexp.MustCompile(`"[^"]*"`)

@@ -1,6 +1,8 @@
 ---
 name: rich-skill
 description: A skill with code blocks and imperative instructions for testing content and contamination analysis.
+metadata:
+  labelText: "Analyze code examples and instructions."
 ---
 # Rich Skill
 

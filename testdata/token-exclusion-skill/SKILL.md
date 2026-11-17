@@ -1,6 +1,8 @@
 ---
 name: token-exclusion-skill
 description: A fixture with generated and non-generated non-standard content.
+metadata:
+  labelText: "Validate packages with generated content."
 ---
 
 # Token Exclusion Skill

@@ -2,6 +2,8 @@
 name: skill-alpha
 description: A valid skill for multi-skill testing.
 license: MIT
+metadata:
+  labelText: "Demonstrate a valid skill package."
 ---
 # Skill Alpha
 

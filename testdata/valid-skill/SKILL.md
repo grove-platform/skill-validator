@@ -4,6 +4,7 @@ description: A well-formed example skill for testing the validator.
 license: MIT
 compatibility: Works with all major LLM providers.
 metadata:
+  labelText: "Get started with a well-formed example skill."
   author: test
   version: "1.0"
 allowed-tools: Bash, Read, Write

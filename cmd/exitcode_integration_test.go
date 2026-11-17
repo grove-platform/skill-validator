@@ -106,6 +106,58 @@ func TestExitCodes(t *testing.T) {
 	}
 }
 
+func TestLabelTextValidation(t *testing.T) {
+	bin := buildBinary(t)
+	tests := []struct {
+		name        string
+		frontmatter string
+		wantCode    int
+		want        string
+	}{
+		{"missing metadata", "", 1, `suggested labelText: "Build search indexes."`},
+		{"missing labelText", "metadata:\n  version: \"1.0\"\n", 1, "metadata.labelText is required"},
+		{"blank labelText", "metadata:\n  labelText: \"  \"\n", 1, "metadata.labelText is required"},
+		{"non-string labelText", "metadata:\n  labelText: false\n", 1, "metadata.labelText must be a string"},
+		{"top-level labelText", "labelText: Build search indexes\n", 1, "metadata.labelText is required"},
+		{"valid labelText", "metadata:\n  labelText: Build search indexes\n", 0, `metadata.labelText: "Build search indexes"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := filepath.Join(t.TempDir(), "search")
+			if err := os.Mkdir(dir, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			content := "---\nname: search\ndescription: Build search indexes. Use for search.\n" + tt.frontmatter + "---\n# Search\n"
+			path := filepath.Join(dir, "SKILL.md")
+			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			for _, command := range [][]string{{"validate", "structure"}, {"check", "--only=structure"}} {
+				args := append(command, "--emit-annotations", "--allow-extra-frontmatter", dir)
+				cmd := exec.Command(bin, args...)
+				out, _ := cmd.CombinedOutput()
+				if got := cmd.ProcessState.ExitCode(); got != tt.wantCode {
+					t.Errorf("%v: exit code = %d, want %d\n%s", command, got, tt.wantCode, out)
+				}
+				if !strings.Contains(string(out), tt.want) {
+					t.Errorf("%v: expected %q in output:\n%s", command, tt.want, out)
+				}
+				if tt.wantCode == 1 && (!strings.Contains(string(out), "::error file=") ||
+					!strings.Contains(string(out), "title=Frontmatter::metadata.labelText")) {
+					t.Errorf("%v: missing labelText CI error annotation:\n%s", command, out)
+				}
+			}
+			after, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(after) != content {
+				t.Error("validation modified the skill file")
+			}
+		})
+	}
+}
+
 func TestSliceFlags(t *testing.T) {
 	bin := buildBinary(t)
 
@@ -322,7 +374,7 @@ func TestMaxDepth(t *testing.T) {
 	if err := os.MkdirAll(skillDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	skill := "---\nname: skill\ndescription: Nested two levels down.\n---\n# Skill\n\nDo the thing.\n"
+	skill := "---\nname: skill\ndescription: Nested two levels down.\nmetadata:\n  labelText: Do the thing.\n---\n# Skill\n\nDo the thing.\n"
 	if err := os.WriteFile(filepath.Join(skillDir, "SKILL.md"), []byte(skill), 0o644); err != nil {
 		t.Fatal(err)
 	}

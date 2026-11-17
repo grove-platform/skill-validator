@@ -8,6 +8,7 @@ description: >-
   validate, or quality-check an Agent Skill.
 compatibility: Requires skill-validator CLI. LLM scoring requires an Anthropic or OpenAI API key, the Claude CLI, OR can be skipped for structural-only review.
 metadata:
+  labelText: "Review an Agent Skill for structural validity and content quality."
   author: agent-ecosystem
   version: "1.0"
 ---

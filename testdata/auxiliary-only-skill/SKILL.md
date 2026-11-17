@@ -1,6 +1,8 @@
 ---
 name: auxiliary-only-skill
 description: A skill that uses only shell and config code blocks for testing contamination.
+metadata:
+  labelText: "Set up shell tools and configuration."
 ---
 # Auxiliary Only Skill
 
