@@ -72,6 +72,7 @@ func getEncoder() (tokenizer.Codec, error) {
 // and non-standard ("other") token counts.
 func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenCount, []types.TokenCount) {
 	ctx := types.ResultContext{Category: "Tokens"}
+	limitCtx := types.ResultContext{Category: "Tokens", Code: types.CodeTokenLimit}
 	var results []types.Result
 	var counts []types.TokenCount
 
@@ -88,7 +89,7 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 
 	// Warn if body exceeds 5000 tokens
 	if bodyCount > 5000 {
-		results = append(results, ctx.WarnFilef("SKILL.md", "SKILL.md body is %d tokens (spec recommends < 5000)", bodyCount))
+		results = append(results, limitCtx.WarnFilef("SKILL.md", "SKILL.md body is %d tokens (spec recommends < 5000)", bodyCount))
 	}
 
 	// Warn if SKILL.md exceeds 500 lines
@@ -129,13 +130,13 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 
 			// Per-file limits
 			if fileTokens > refFileHardLimit {
-				results = append(results, ctx.ErrorFilef(relPath,
+				results = append(results, limitCtx.ErrorFilef(relPath,
 					"%s is %d tokens — this will consume 12-20%% of a typical context window "+
 						"and meaningfully degrade agent performance; split into smaller focused files",
 					relPath, fileTokens,
 				))
 			} else if fileTokens > refFileSoftLimit {
-				results = append(results, ctx.WarnFilef(relPath,
+				results = append(results, limitCtx.WarnFilef(relPath,
 					"%s is %d tokens — consider splitting into smaller focused files "+
 						"so agents load only what they need",
 					relPath, fileTokens,
@@ -153,13 +154,13 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 			refTotal += rc.Tokens
 
 			if rc.Tokens > refFileHardLimit {
-				results = append(results, ctx.ErrorFilef(rc.File,
+				results = append(results, limitCtx.ErrorFilef(rc.File,
 					"%s is %d tokens — this will consume 12-20%% of a typical context window "+
 						"and meaningfully degrade agent performance; split into smaller focused files",
 					rc.File, rc.Tokens,
 				))
 			} else if rc.Tokens > refFileSoftLimit {
-				results = append(results, ctx.WarnFilef(rc.File,
+				results = append(results, limitCtx.WarnFilef(rc.File,
 					"%s is %d tokens — consider splitting into smaller focused files "+
 						"so agents load only what they need",
 					rc.File, rc.Tokens,
@@ -170,13 +171,13 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 
 	// Aggregate reference limits (includes root files when flat layouts accepted)
 	if refTotal > refTotalHardLimit {
-		results = append(results, ctx.Errorf(
+		results = append(results, limitCtx.Errorf(
 			"total reference files: %d tokens — this will consume 25-40%% of a typical "+
 				"context window; reduce content or split into a skill with fewer references",
 			refTotal,
 		))
 	} else if refTotal > refTotalSoftLimit {
-		results = append(results, ctx.Warnf(
+		results = append(results, limitCtx.Warnf(
 			"total reference files: %d tokens — agents may load multiple references "+
 				"in one session, consider whether all this content is essential",
 			refTotal,
@@ -197,14 +198,14 @@ func CheckTokens(dir, body string, opts Options) ([]types.Result, []types.TokenC
 		otherTotal += c.Tokens
 	}
 	if otherTotal > otherTotalHardLimit {
-		results = append(results, ctx.Errorf(
+		results = append(results, limitCtx.Errorf(
 			"non-standard files total %d tokens — if an agent loads these, "+
 				"they will consume most of the context window and severely degrade performance; "+
 				"move essential content into references/ or remove unnecessary files",
 			otherTotal,
 		))
 	} else if otherTotal > otherTotalSoftLimit {
-		results = append(results, ctx.Warnf(
+		results = append(results, limitCtx.Warnf(
 			"non-standard files total %d tokens — if an agent loads these, "+
 				"they could consume a significant portion of the context window; "+
 				"consider moving essential content into references/ or removing unnecessary files",

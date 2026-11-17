@@ -3,7 +3,7 @@ package types
 import "testing"
 
 func TestResultContext_DefaultFile(t *testing.T) {
-	ctx := ResultContext{Category: "Frontmatter", File: "SKILL.md"}
+	ctx := ResultContext{Category: "Frontmatter", File: "SKILL.md", Code: "test-code"}
 
 	r := ctx.Error("name is required")
 	if r.Level != Error {
@@ -11,6 +11,9 @@ func TestResultContext_DefaultFile(t *testing.T) {
 	}
 	if r.Category != "Frontmatter" {
 		t.Errorf("expected category Frontmatter, got %q", r.Category)
+	}
+	if r.Code != "test-code" {
+		t.Errorf("expected code test-code, got %q", r.Code)
 	}
 	if r.File != "SKILL.md" {
 		t.Errorf("expected file SKILL.md, got %q", r.File)

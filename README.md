@@ -174,9 +174,9 @@ Use `--version` to print the installed version.
 
 | Code | Meaning |
 |------|---------|
-| `0` | Clean pass (no errors, no warnings) |
+| `0` | No errors or exit-affecting warnings under the selected policy |
 | `1` | Validation errors present |
-| `2` | Warnings present, no errors |
+| `2` | Exit-affecting warnings present, no errors (without `--strict`) |
 | `3` | CLI/usage error (bad flags, missing args) |
 
 Use `--strict` on `check` or `validate structure` to treat warnings as errors (exit 1 instead of 2). This is useful in CI pipelines where you want a binary pass/fail:
@@ -185,6 +185,22 @@ Use `--strict` on `check` or `validate structure` to treat warnings as errors (e
 skill-validator check --strict <path>
 skill-validator validate structure --strict <path>
 ```
+
+To keep token-budget warnings visible without making them affect the exit code,
+add `--allow-token-warnings` to either command. This also applies under `--strict`:
+
+```
+skill-validator check --strict --allow-token-warnings <path>
+skill-validator validate structure --strict --allow-token-warnings <path>
+```
+
+Only token-count threshold warnings are exempt: the SKILL.md body recommendation,
+per-file reference limits (including root files under `--allow-flat-layouts`), and
+aggregate reference/non-standard file soft limits. Hard token-limit errors still
+exit 1. Line-count warnings, truncated token counts, unreadable-file warnings, and
+all unrelated findings retain their normal exit behavior. Reports, warning totals,
+and GitHub annotations are unchanged; when only allowed token warnings remain,
+the command exits 0 rather than 2 (or 1 under `--strict`).
 
 For more details about how the commands are implemented and what they provide, refer to [What it Checks](#what-it-checks).
 
@@ -199,6 +215,7 @@ skill-validator validate structure --allow-flat-layouts <path>
 skill-validator validate structure --allow-dirs=evals,testing <path>
 skill-validator validate structure --allow-nested-paths=assets/components <path>
 skill-validator validate structure --exclude-token-paths=site <path>
+skill-validator validate structure --strict --allow-token-warnings <path>
 ```
 
 Checks spec compliance: directory structure, frontmatter fields, token limits, skill ratio, code fence integrity, internal link validity, and orphan file detection.
@@ -206,6 +223,7 @@ Checks spec compliance: directory structure, frontmatter fields, token limits, s
 | Flag | Effect |
 |---|---|
 | `--strict` | Treat warnings as errors (exit 1 instead of 2) |
+| `--allow-token-warnings` | Keep token-count threshold warnings visible without affecting the exit code, even under `--strict`; hard limits still fail |
 | `--skip-orphans` | Suppress warnings about unreferenced files in `scripts/`, `references/`, and `assets/` |
 | `--allow-extra-frontmatter` | Suppress warnings for non-spec frontmatter fields (e.g. `user-invokable`). Standard fields are still fully validated |
 | `--allow-flat-layouts` | Allow files at the skill root without warnings (see [Flat skill layouts](#flat-skill-layouts)) |
@@ -311,6 +329,7 @@ skill-validator check --allow-flat-layouts <path>
 skill-validator check --allow-dirs=evals,testing <path>
 skill-validator check --allow-nested-paths=assets/components <path>
 skill-validator check --exclude-token-paths=site <path>
+skill-validator check --strict --allow-token-warnings <path>
 ```
 
 Runs all checks (structure + links + content + contamination).
@@ -321,6 +340,7 @@ Runs all checks (structure + links + content + contamination).
 | `--skip` | Comma-separated list of check groups to skip (mutually exclusive with `--only`) |
 | `--per-file` | Show per-file reference analysis alongside the aggregate |
 | `--strict` | Treat warnings as errors (exit 1 instead of 2) |
+| `--allow-token-warnings` | Keep token-count threshold warnings visible without affecting the exit code, even under `--strict`; hard limits still fail |
 | `--skip-orphans` | Suppress orphan file warnings in the structure check |
 | `--allow-extra-frontmatter` | Suppress warnings for non-spec frontmatter fields |
 | `--allow-flat-layouts` | Allow files at the skill root without warnings (see [Flat skill layouts](#flat-skill-layouts)) |
@@ -664,7 +684,22 @@ jobs:
 
 The first `check` line runs validation with text output and annotations; the second appends a markdown report to the GitHub Actions step summary. If you only need one of these (annotations in the diff or the summary report), drop the other line.
 
-For in-progress skills where you want warnings to be non-blocking, remove `--strict` so warnings exit with code 2 instead of failing the job. You can make this conditional per directory:
+To make only token-budget warnings non-blocking in CI, use
+`--strict --allow-token-warnings`. Warnings remain in annotations and the summary,
+while hard token limits and unrelated findings still fail the check:
+
+```yaml
+      - name: Validate skills with advisory token warnings
+        shell: bash
+        run: |
+          skill-validator check --strict --allow-token-warnings --emit-annotations -o markdown skills/ \
+            | tee >(grep -v '^::' >> "$GITHUB_STEP_SUMMARY")
+```
+
+For in-progress skills where you want **all** warnings to be non-blocking, remove
+`--strict` and explicitly accept exit code 2. Removing `--strict` alone does not
+make a GitHub Actions step pass: any nonzero exit code fails the step. You can
+make this conditional per directory:
 
 ```yaml
       - name: Validate published skills
@@ -673,9 +708,11 @@ For in-progress skills where you want warnings to be non-blocking, remove `--str
           skill-validator check --strict -o markdown skills/published/ >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate draft skills
+        shell: bash
         run: |
-          skill-validator check --emit-annotations skills/drafts/
-          skill-validator check -o markdown skills/drafts/ >> "$GITHUB_STEP_SUMMARY"
+          skill-validator check --emit-annotations -o markdown skills/drafts/ \
+            | tee >(grep -v '^::' >> "$GITHUB_STEP_SUMMARY") \
+            || { status=$?; [ "$status" -eq 2 ] || exit "$status"; }
 ```
 
 ### Multi-skill directories

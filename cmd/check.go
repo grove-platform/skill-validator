@@ -18,6 +18,7 @@ var (
 	perFileCheck               bool
 	checkSkipOrphans           bool
 	strictCheck                bool
+	checkAllowTokenWarnings    bool
 	checkAllowExtraFrontmatter bool
 	checkAllowFlatLayouts      bool
 	checkAllowDirs             []string
@@ -40,6 +41,8 @@ func init() {
 	checkCmd.Flags().BoolVar(&checkSkipOrphans, "skip-orphans", false,
 		"skip orphan file detection (unreferenced files in scripts/, references/, assets/)")
 	checkCmd.Flags().BoolVar(&strictCheck, "strict", false, "treat warnings as errors (exit 1 instead of 2)")
+	checkCmd.Flags().BoolVar(&checkAllowTokenWarnings, "allow-token-warnings", false,
+		"keep token-count threshold warnings visible without affecting the exit code, even with --strict; hard token limits still fail")
 	checkCmd.Flags().BoolVar(&checkAllowExtraFrontmatter, "allow-extra-frontmatter", false,
 		"suppress warnings for non-spec frontmatter fields")
 	checkCmd.Flags().BoolVar(&checkAllowFlatLayouts, "allow-flat-layouts", false,
@@ -96,7 +99,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 			ExcludeTokenPaths:     excludeTokenPaths,
 		},
 	}
-	eopts := exitOpts{strict: strictCheck}
+	eopts := exitOpts{strict: strictCheck, allowTokenWarnings: checkAllowTokenWarnings}
 	ctx := context.Background()
 
 	switch mode {

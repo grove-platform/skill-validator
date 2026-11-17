@@ -47,7 +47,7 @@ func outputReportWithExitOpts(r *types.Report, perFile bool, opts exitOpts) erro
 		wd, _ := os.Getwd()
 		report.PrintAnnotations(os.Stdout, r, wd)
 	}
-	if code := opts.resolve(r.Errors, r.Warnings); code != 0 {
+	if code := opts.resolve(r.Errors, opts.warningCount(r)); code != 0 {
 		return exitCodeError{code: code}
 	}
 	return nil
@@ -80,7 +80,13 @@ func outputMultiReportWithExitOpts(mr *types.MultiReport, perFile bool, opts exi
 		wd, _ := os.Getwd()
 		report.PrintMultiAnnotations(os.Stdout, mr, wd)
 	}
-	if code := opts.resolve(mr.Errors, mr.Warnings); code != 0 {
+	warnings := mr.Warnings
+	if opts.allowTokenWarnings {
+		for _, r := range mr.Skills {
+			warnings -= r.Warnings - opts.warningCount(r)
+		}
+	}
+	if code := opts.resolve(mr.Errors, warnings); code != 0 {
 		return exitCodeError{code: code}
 	}
 	return nil

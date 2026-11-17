@@ -12,6 +12,7 @@ import (
 var (
 	skipOrphans                 bool
 	strictStructure             bool
+	structAllowTokenWarnings    bool
 	structAllowExtraFrontmatter bool
 	structAllowFlatLayouts      bool
 	structAllowDirs             []string
@@ -31,6 +32,8 @@ func init() {
 	validateStructureCmd.Flags().BoolVar(&skipOrphans, "skip-orphans", false,
 		"skip orphan file detection (unreferenced files in scripts/, references/, assets/)")
 	validateStructureCmd.Flags().BoolVar(&strictStructure, "strict", false, "treat warnings as errors (exit 1 instead of 2)")
+	validateStructureCmd.Flags().BoolVar(&structAllowTokenWarnings, "allow-token-warnings", false,
+		"keep token-count threshold warnings visible without affecting the exit code, even with --strict; hard token limits still fail")
 	validateStructureCmd.Flags().BoolVar(&structAllowExtraFrontmatter, "allow-extra-frontmatter", false,
 		"suppress warnings for non-spec frontmatter fields")
 	validateStructureCmd.Flags().BoolVar(&structAllowFlatLayouts, "allow-flat-layouts", false,
@@ -68,7 +71,7 @@ func runValidateStructure(cmd *cobra.Command, args []string) error {
 		AllowNestedPaths:      allowNestedPaths,
 		ExcludeTokenPaths:     excludeTokenPaths,
 	}
-	eopts := exitOpts{strict: strictStructure}
+	eopts := exitOpts{strict: strictStructure, allowTokenWarnings: structAllowTokenWarnings}
 
 	switch mode {
 	case types.SingleSkill:
