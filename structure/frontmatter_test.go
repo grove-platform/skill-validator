@@ -458,6 +458,11 @@ func TestCheckFrontmatter_LabelText(t *testing.T) {
 		{"multiline description", nil, "  Build\nsearch indexes.  Use for search.\n", types.Error, `suggested labelText: "Build search indexes."`},
 		{"no usable description", nil, " \t\n", types.Error, "add a short summary of what the skill does"},
 		{"abbreviation in description", nil, "Use e.g. vector search. Next sentence.", types.Error, `suggested labelText: "Use e.g. vector search."`},
+		{"at length limit", map[string]any{"labelText": strings.Repeat("a", 150)}, "Build search indexes.", types.Pass, "metadata.labelText: "},
+		{"over length limit", map[string]any{"labelText": strings.Repeat("a", 151)}, "Build search indexes.", types.Error, "metadata.labelText exceeds 150 characters (151)"},
+		{"multibyte at length limit", map[string]any{"labelText": strings.Repeat("é", 150)}, "Build search indexes.", types.Pass, "metadata.labelText: "},
+		{"multibyte over length limit", map[string]any{"labelText": strings.Repeat("é", 151)}, "Build search indexes.", types.Error, "metadata.labelText exceeds 150 characters (151)"},
+		{"suggestion over length limit", nil, strings.Repeat("a", 151) + ". Use for search.", types.Error, "add a short summary of what the skill does (at most 150 characters)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
