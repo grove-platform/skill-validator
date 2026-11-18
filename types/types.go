@@ -33,10 +33,15 @@ func (l Level) String() string {
 	}
 }
 
+// CodeTokenLimit identifies a token-count threshold finding, distinct from
+// other token-check findings such as unreadable files or truncated counts.
+const CodeTokenLimit = "token-limit"
+
 // Result represents a single validation finding.
 type Result struct {
 	Level    Level
 	Category string
+	Code     string // optional machine-readable finding identifier
 	Message  string
 	File     string // path relative to skill dir, e.g. "SKILL.md", "references/guide.md"
 	Line     int    // 0 = no line info

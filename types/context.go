@@ -6,6 +6,7 @@ import "fmt"
 // so individual results inherit location context automatically.
 type ResultContext struct {
 	Category string
+	Code     string // optional finding identifier inherited by results
 	File     string // default file; methods like ErrorFile override it
 }
 
@@ -16,6 +17,7 @@ func (c ResultContext) result(level Level, file string, line int, msg string) Re
 	return Result{
 		Level:    level,
 		Category: c.Category,
+		Code:     c.Code,
 		Message:  msg,
 		File:     file,
 		Line:     line,

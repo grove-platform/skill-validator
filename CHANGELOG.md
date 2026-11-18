@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `--allow-token-warnings` on `check` and `validate structure` keeps token-count
+  threshold warnings in reports and GitHub annotations without affecting the exit
+  code, including under `--strict`. Hard token-limit errors and all other findings
+  retain their existing exit behavior.
+
 ## [1.8.0]
 
 ### Added
