@@ -18,17 +18,3 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
-
-brews:
-  - directory: Formula
-    repository:
-      owner: agent-ecosystem
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: https://github.com/agent-ecosystem/skill-validator
-    description: CLI tool that validates and scores Agent Skill packages
-    license: MIT
-    install: |
-      bin.install "skill-validator"
-    test: |
-      assert_match version.to_s, shell_output("#{bin}/skill-validator --version")
