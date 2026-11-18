@@ -3,6 +3,19 @@
 [![CI](https://github.com/agent-ecosystem/skill-validator/actions/workflows/ci.yml/badge.svg)](https://github.com/agent-ecosystem/skill-validator/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> **Grove fork.** This is the [grove-platform](https://github.com/grove-platform/skill-validator) fork of [agent-ecosystem/skill-validator](https://github.com/agent-ecosystem/skill-validator), with additional MongoDB validations. The Homebrew and `go install ...@latest` instructions below install the upstream tool, not this fork. To install this fork, download the latest release binary (Linux amd64 shown; adjust the pattern for your platform):
+>
+> ```
+> gh release download --repo grove-platform/skill-validator --pattern '*_linux_amd64.tar.gz'
+> tar -xzf skill-validator_*_linux_amd64.tar.gz skill-validator
+> sudo install -m 0755 skill-validator /usr/local/bin/
+> skill-validator --version
+> ```
+>
+> The `install` step puts the binary on your `PATH`; any directory on your `PATH` works in place of `/usr/local/bin`. `skill-validator --version` should report a `-grove` version. If it does not, an upstream installation earlier on your `PATH` is still being used.
+>
+> Or clone this repository and run `go install ./cmd/skill-validator`, which installs into Go's bin directory (`go env GOBIN`, or `$(go env GOPATH)/bin` when that is empty).
+
 A CLI tool that validates and scores [Agent Skill](https://agentskills.io) packages.
 
 Spec compliance is table stakes. `skill-validator` goes further: it checks that links actually resolve, flags files that shouldn't be in a skill directory, reports token counts so you can see how much of an agent's context window your skill will consume, analyzes content quality metrics, detects cross-language contamination, and offers LLM-as-judge scoring to evaluate skill quality across dimensions like clarity, actionability, and novelty. A spec-compliant skill that has broken links or a 60k-token reference file will technically pass the spec but perform poorly in practice.

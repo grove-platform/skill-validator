@@ -5,11 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.8.0-grove.1]
+
+First release of the [grove-platform fork], based on upstream 1.8.0.
 
 ### Added
 
-- `metadata.labelText` is limited to 150 characters. A longer value is an error.
+- `metadata.labelText` is required in SKILL.md frontmatter and limited to 150
+  characters. A missing, blank, non-string, or over-long value is an error.
+  When the label is missing or blank, the message suggests a value derived
+  from the skill description.
 - `--allow-token-warnings` on `check` and `validate structure` keeps token-count
   threshold warnings in reports and GitHub annotations without affecting the exit
   code, including under `--strict`. Hard token-limit errors and all other findings
@@ -411,6 +416,8 @@ First stable release. Includes the complete CLI and importable library packages.
 [#101]: https://github.com/agent-ecosystem/skill-validator/issues/101
 [#103]: https://github.com/agent-ecosystem/skill-validator/issues/103
 [#105]: https://github.com/agent-ecosystem/skill-validator/pull/105
+[grove-platform fork]: https://github.com/grove-platform/skill-validator
+[1.8.0-grove.1]: https://github.com/grove-platform/skill-validator/releases/tag/v1.8.0-grove.1
 [@aminmesbahi]: https://github.com/aminmesbahi
 [@BoneLiu]: https://github.com/BoneLiu
 [@choplin]: https://github.com/choplin
