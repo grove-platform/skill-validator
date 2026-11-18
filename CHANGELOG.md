@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `metadata.labelText` is limited to 150 characters. A longer value is an error.
 - `--allow-token-warnings` on `check` and `validate structure` keeps token-count
   threshold warnings in reports and GitHub annotations without affecting the exit
   code, including under `--strict`. Hard token-limit errors and all other findings

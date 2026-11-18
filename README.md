@@ -777,7 +777,7 @@ These checks validate conformance with the [Agent Skills specification](https://
 | --- | --- |
 | `name` | Required; 1-64 lowercase letters, numbers, and hyphens; must match the directory name |
 | `description` | Required; must conform to the expected type and length |
-| `metadata.labelText` | Required; must be a non-blank string |
+| `metadata.labelText` | Required; must be a non-blank string of at most 150 characters |
 | `license` | Optional; must conform to the expected type and length |
 | `compatibility` | Optional; must conform to the expected type and length |
 | Other `metadata` entries | Optional; must conform to the expected types and lengths |
@@ -798,19 +798,23 @@ metadata:
 This validator requires `metadata.labelText` in every skill. The field is not
 part of the [Agent Skills specification](https://agentskills.io/specification).
 
-The value must be a string that contains at least one non-whitespace character.
+The value must be a string that contains at least one non-whitespace character
+and is at most 150 characters long. Characters are counted as Unicode code
+points, and leading and trailing whitespace counts toward the limit.
 Validation fails with an error if the field is:
 
 - missing or `null`
 - empty or whitespace-only
 - not a string, such as a number or boolean
+- longer than 150 characters
 
 The check runs in `validate structure`, and in `check` when the structure group
 is enabled. `--allow-extra-frontmatter` does not turn it off.
 
 If the label is missing, `null`, or blank, the error message suggests a value:
 the first sentence of the skill's description. If the description has no usable
-sentence, the message asks you to write a short summary instead. The validator
+sentence, or that sentence is longer than 150 characters, the message asks you
+to write a short summary instead. The validator
 never edits the skill file, so you add the label yourself. With
 `--emit-annotations`, the error and its suggestion also appear as GitHub Actions
 annotations.

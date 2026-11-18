@@ -20,6 +20,7 @@ const (
 	maxNameChars          = 64
 	maxDescriptionChars   = 1024
 	maxCompatibilityChars = 500
+	maxLabelTextChars     = 150
 )
 
 // CheckFrontmatter validates the YAML frontmatter of a parsed skill. It checks
@@ -128,16 +129,20 @@ func checkLabelText(s *skill.Skill, ctx types.ResultContext) types.Result {
 			return ctx.Error("metadata.labelText must be a string")
 		}
 		if strings.TrimSpace(label) != "" {
+			if n := utf8.RuneCountInString(label); n > maxLabelTextChars {
+				return ctx.Errorf("metadata.labelText exceeds %d characters (%d)", maxLabelTextChars, n)
+			}
 			return ctx.Passf("metadata.labelText: %q", label)
 		}
 	}
 
 	message := "metadata.labelText is required and must be a non-empty string"
 	description := strings.Join(strings.Fields(s.Frontmatter.Description), " ")
-	if sentences := splitSentences(description); len(sentences) > 0 {
+	if sentences := splitSentences(description); len(sentences) > 0 &&
+		utf8.RuneCountInString(sentences[0]) <= maxLabelTextChars {
 		return ctx.Errorf("%s; suggested labelText: %q", message, sentences[0])
 	}
-	return ctx.Error(message + "; add a short summary of what the skill does")
+	return ctx.Errorf("%s; add a short summary of what the skill does (at most %d characters)", message, maxLabelTextChars)
 }
 
 var quotedStringPattern = regexp.MustCompile(`"[^"]*"`)

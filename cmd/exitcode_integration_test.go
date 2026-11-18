@@ -120,6 +120,7 @@ func TestLabelTextValidation(t *testing.T) {
 		{"non-string labelText", "metadata:\n  labelText: false\n", 1, "metadata.labelText must be a string"},
 		{"top-level labelText", "labelText: Build search indexes\n", 1, "metadata.labelText is required"},
 		{"valid labelText", "metadata:\n  labelText: Build search indexes\n", 0, `metadata.labelText: "Build search indexes"`},
+		{"too long labelText", "metadata:\n  labelText: " + strings.Repeat("a", 151) + "\n", 1, "metadata.labelText exceeds 150 characters (151)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
