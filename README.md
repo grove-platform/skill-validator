@@ -8,9 +8,13 @@
 > ```
 > gh release download --repo grove-platform/skill-validator --pattern '*_linux_amd64.tar.gz'
 > tar -xzf skill-validator_*_linux_amd64.tar.gz skill-validator
+> sudo install -m 0755 skill-validator /usr/local/bin/
+> skill-validator --version
 > ```
 >
-> Or clone this repository and run `go install ./cmd/skill-validator`.
+> The `install` step puts the binary on your `PATH`; any directory on your `PATH` works in place of `/usr/local/bin`. `skill-validator --version` should report a `-grove` version. If it does not, an upstream installation earlier on your `PATH` is still being used.
+>
+> Or clone this repository and run `go install ./cmd/skill-validator`, which installs into Go's bin directory (`go env GOBIN`, or `$(go env GOPATH)/bin` when that is empty).
 
 A CLI tool that validates and scores [Agent Skill](https://agentskills.io) packages.
 
